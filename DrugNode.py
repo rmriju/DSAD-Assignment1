@@ -64,6 +64,9 @@ class DrugNode:
                     args = tag[1].split(',')
                     print("High demand drugs")
                     print("----------------------------------------")
+                    # args[0] carries status(Sale/Buy), and args[1] holds freq
+                    self.highDemandDrugs(args[0], args[1])
+
                 elif len(tag) == 1 and tag[0] == 'printDrugInventory':
                     print("Drug Inventory")
                     print("----------------------------------------")
@@ -75,9 +78,8 @@ class DrugNode:
                     self.printStockOut()
 
                 elif len(tag) == 2 and tag[0] == 'checkDrugStatus':
-                    print("\nDrug Status from supplied input")
-                    print("----------------------------------------")
                     self.checkDrugStatus(int(tag[1]))
+                    # Check if outputPS1.txt is updated with drug status as per input
 
                 elif len(tag) == 2 and tag[0] == 'supplyShortage':
                     print("\nDrug supply shortage")
@@ -180,7 +182,7 @@ class DrugNode:
         if self.right:
             return self.right.supplyShortage(minunits, 1)
 
-    def highDemandDrugs(self, status, frequency, flag=0)
+    def highDemandDrugs(self, status, frequency, flag=0):
         # Logic to be updated for identifying high demand drugs
         #
         # if self.avCount <= minunits:
@@ -191,10 +193,10 @@ class DrugNode:
 
         # Traverse to next left
         if self.left:
-            return self.left.highDemandDrugs(status, frequency, 1)
+            return self.left.highDemandDrugs(status, frequency, flag)
         # Traverse to next right
         if self.right:
-            return self.right.highDemandDrugs(status, frequency, 1)
+            return self.right.highDemandDrugs(status, frequency, flag)
 
 
 if __name__ == '__main__':
