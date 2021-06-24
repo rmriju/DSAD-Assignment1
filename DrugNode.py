@@ -1,6 +1,7 @@
+
 # Drug Node class as a binary tree
 class DrugNode:
-    def __init__(self, uid=None, availCount=None):
+    def __init__(self, uid=None, availCount=0):
         self.uid = uid
         self.avCount = availCount
         self.chkoutCtr = 1
@@ -9,7 +10,9 @@ class DrugNode:
 
     def _addDrug(self, uid, availCount):
         if self.uid:
-            if uid < self.uid:
+            if uid == self.uid:
+                self.avCount = self.avCount + availCount
+            elif uid < self.uid:
                 if self.left is None:
                     self.left = DrugNode(uid, availCount)
                 else:
@@ -37,9 +40,9 @@ class DrugNode:
         lines = content.split('\n')
         for line in lines:
             drug = line.split(',')
-            print(drug, len(drug))
             if len(drug) > 1:
                 if len(drug) == 2:
+                    # total_buyOrder = total_buyOrder + 1
                     self._addDrug(int(drug[0]), int(drug[1]))
                 else:
                     print('File Input - invalid format')
@@ -51,43 +54,55 @@ class DrugNode:
         for line in lines:
             tag = line.split(':')
             if len(tag) >= 1:
-                print("Tag ", tag)
+                print()
                 if len(tag) == 2 and tag[0] == 'updateDrugList':
-                    print("For update ", tag)
                     args = tag[1].split(',')
-                    return self._updateDrugList(int(args[0]), int(args[1]))
+                    self._updateDrugList(int(args[0]), int(args[1]))
+                    print("----------------------------------------")
                 elif len(tag) == 2 and tag[0] == 'freqDemand':
                     args = tag[1].split(',')
-                    return None
+                    print("High demand drugs")
+                    print("----------------------------------------")
                 elif len(tag) == 1 and tag[0] == 'printDrugInventory':
-                    return None
+                    print("Drug Inventory")
+                    print("----------------------------------------")
+                    self.printDrugInventory()
+
                 elif len(tag) == 1 and tag[0] == 'printStockOut':
-                    return None
-                elif len(tag) == 1 and tag[0] == 'printDrugInventory':
-                    return None
-                elif len(tag) == 1 and tag[0] == 'checkDrugStatus':
-                    return None
-                elif len(tag) == 1 and tag[0] == 'supplyShortage':
-                    return None
+                    print("Drug Stock out")
+                    print("----------------------------------------")
+                    self.printStockOut()
+
+                elif len(tag) == 2 and tag[0] == 'checkDrugStatus':
+                    print("\nDrug Status from supplied input")
+                    print("----------------------------------------")
+                elif len(tag) == 2 and tag[0] == 'supplyShortage':
+                    print("\nDrug supply shortage")
+                    print("----------------------------------------")
             else:
                 print('File Input - invalid format')
 
     def _updateDrugList(self, uid, availCount):
         # Get the drug node to update
         drugToUpdate = self.searchNode(uid)
-        print("To update qty for ", drugToUpdate)
-        drugToUpdate.chkoutCtr = drugToUpdate.chkoutCtr + 1
-        # Sell order
-        if drugToUpdate.chkoutCtr % 2 == 0:
-            drugToUpdate.avCount = drugToUpdate.avCount - availCount
-        # Buy order
+        if drugToUpdate.avCount - availCount > -1:
+            drugToUpdate.chkoutCtr = drugToUpdate.chkoutCtr + 1
+            # Sell order
+            if drugToUpdate.chkoutCtr % 2 == 0:
+                drugToUpdate.avCount = drugToUpdate.avCount - availCount
+                # total_saleOrder = total_saleOrder + 1
+                print("Sale order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =", drugToUpdate.avCount)
+            # Buy order
+            else:
+                drugToUpdate.avCount = drugToUpdate.avCount + availCount
+                # total_buyOrder = total_buyOrder + 1
+                print("Buy order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =", drugToUpdate.avCount)
         else:
-            drugToUpdate.avCount = drugToUpdate.avCount + availCount
+            print("Insufficient stock!\nOnly", drugToUpdate.avCount, "stock left for medicine", drugToUpdate.uid)
 
     def searchNode(self, uid):
-        # If value is found in the given binary tree then, set the flag to true
+        # returns if the medicine matches
         if self.uid == uid:
-            print("Got the record ", uid)
             return self
         # Search in left
         elif uid < self.uid and self.left is not None:
@@ -96,17 +111,39 @@ class DrugNode:
         elif uid > self.uid and self.right is not None:
             return self.right.searchNode(uid)
 
+    def printDrugInventory(self, flag=0):
+        if flag == 0:
+            print('Total number of medicines entered in the inventory - ?')
+        print(self.uid, ",", self.avCount),
+        if self.left:
+            return self.left.printDrugInventory(1)
+        if self.right:
+            return self.right.printDrugInventory(2)
+
+    def printStockOut(self, flag=0):
+        if self.avCount == 0:
+            if flag == 0:
+                print("The following medicines are out of stock:")
+            print(self.uid)
+            flag = 1
+        # Traverse to next left
+        if self.left:
+            return self.left.printStockOut(flag)
+        # Traverse to next right
+        if self.right:
+            return self.right.printStockOut(flag)
+
 
 if __name__ == '__main__':
     drugList = DrugNode()
+    # global total_buyOrder, total_saleOrder
+    # total_buyOrder = 0
+    # total_saleOrder = 0
+
     # drugList.addDrug(111, 10)
     # drugList.addDrug(112, 6)
     # drugList.addDrug(113, 1)
     # drugList.addDrug(114, 25)
     # drugList.addDrug(112, 3)
-
     drugList.readDrugList()
-    drugList.printTree('0')
-
     drugList.executePromptsTags()
-    drugList.printTree('0')
