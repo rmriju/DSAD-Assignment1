@@ -1,3 +1,4 @@
+import os
 
 # Drug Node class as a binary tree
 class DrugNode:
@@ -76,9 +77,13 @@ class DrugNode:
                 elif len(tag) == 2 and tag[0] == 'checkDrugStatus':
                     print("\nDrug Status from supplied input")
                     print("----------------------------------------")
+                    self.checkDrugStatus(int(tag[1]))
+
                 elif len(tag) == 2 and tag[0] == 'supplyShortage':
                     print("\nDrug supply shortage")
                     print("----------------------------------------")
+                    self.supplyShortage(int(tag[1]))
+
             else:
                 print('File Input - invalid format')
 
@@ -113,6 +118,7 @@ class DrugNode:
 
     def printDrugInventory(self, flag=0):
         if flag == 0:
+            # Logic to be updated for calculating total number of medicines entered
             print('Total number of medicines entered in the inventory - ?')
         print(self.uid, ",", self.avCount),
         if self.left:
@@ -121,11 +127,12 @@ class DrugNode:
             return self.right.printDrugInventory(2)
 
     def printStockOut(self, flag=0):
-        if self.avCount == 0:
-            if flag == 0:
-                print("The following medicines are out of stock:")
-            print(self.uid)
-            flag = 1
+        if self.uid:
+            if self.avCount == 0:
+                if flag == 0:
+                    print("The following medicines are out of stock:")
+                print(self.uid)
+                flag = 1
         # Traverse to next left
         if self.left:
             return self.left.printStockOut(flag)
@@ -133,9 +140,68 @@ class DrugNode:
         if self.right:
             return self.right.printStockOut(flag)
 
+    def checkDrugStatus(self, uid):
+        # file update with appropriate msg if the medicine matches
+        if self.uid == uid:
+            fout = open("outputPS1.txt", "a")
+            if self.chkoutCtr % 2 == 0:
+                print("Drug id", self.uid, "entered", self.chkoutCtr,"times into the system. Its last status was ‘sell’ and currently have", self.avCount, "units available\n", file=fout)
+            else:
+                print("Drug id", self.uid, "entered", self.chkoutCtr,"times into the system. Its last status was ‘buy’ and currently have", self.avCount, "units available\n", file=fout)
+            if self.avCount == 0:
+                print("All units of drug id", self.uid, "have been sold\n", file=fout)
+            fout.close()
+            return
+
+        # Traverse to left
+        elif uid < self.uid and self.left is not None:
+            return self.left.checkDrugStatus(uid)
+        # Traverse to right
+        elif uid > self.uid and self.right is not None:
+            return self.right.checkDrugStatus(uid)
+        else:
+            # file update if the drug is not found
+            fout = open("outputPS1.txt", "w")
+            print("Drug id", self.uid, "does not exist\n", file=fout)
+            fout.close()
+            return
+
+    def supplyShortage(self, minunits, flag=0):
+        if self.avCount <= minunits:
+            if flag == 0:
+                print("Drugs with supply shortage:")
+                flag = 1
+            print(self.uid, ",", self.avCount)
+
+        # Traverse to next left
+        if self.left:
+            return self.left.supplyShortage(minunits, 1)
+        # Traverse to next right
+        if self.right:
+            return self.right.supplyShortage(minunits, 1)
+
+    def highDemandDrugs(self, status, frequency, flag=0)
+        # Logic to be updated for identifying high demand drugs
+        #
+        # if self.avCount <= minunits:
+        #     if flag == 0:
+        #         print("Drugs with sell entries more than", frequency,"times are:")
+        #         flag = 1
+        #     print(self.uid, ",", self.chkoutCtr)
+
+        # Traverse to next left
+        if self.left:
+            return self.left.highDemandDrugs(status, frequency, 1)
+        # Traverse to next right
+        if self.right:
+            return self.right.highDemandDrugs(status, frequency, 1)
+
 
 if __name__ == '__main__':
     drugList = DrugNode()
+    if os.path.exists("outputPS1.txt"):
+        os.remove("outputPS1.txt")
+
     # global total_buyOrder, total_saleOrder
     # total_buyOrder = 0
     # total_saleOrder = 0

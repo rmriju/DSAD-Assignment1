@@ -1,0 +1,6 @@
+Drug id 114 entered 2 times into the system. Its last status was ‘sell’ and currently have 0 units available
+
+All units of drug id 114 have been sold
+
+Drug id 111 entered 1 times into the system. Its last status was ‘buy’ and currently have 10 units available
+
