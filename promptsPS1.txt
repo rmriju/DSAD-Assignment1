@@ -1,8 +1,12 @@
+
 printDrugInventory
+
 updateDrugList: 112, 9
 updateDrugList: 112, 12
 updateDrugList: 114, 20
 updateDrugList: 114, 18
+
+printStockOut
 printDrugInventory
 checkDrugStatus: 114
 checkDrugStatus: 111

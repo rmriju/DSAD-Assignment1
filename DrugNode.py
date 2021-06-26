@@ -57,7 +57,7 @@ class DrugNode:
     def executePromptsTags(self):
         file = open("promptsPS1.txt")
         global fout
-        self._recreateOutputFile()
+        self._createOutputFile()
         content = file.read()
         lines = content.split('\n')
         for line in lines:
@@ -66,7 +66,8 @@ class DrugNode:
                 print()
                 if len(tag) == 2 and tag[0] == 'updateDrugList':
                     args = tag[1].split(',')
-                    self._updateDrugList(int(args[0]), int(args[1]))
+                    if len(args) > 1 and args[0] and args[1]:
+                        self._updateDrugList(int(args[0]), int(args[1]))
 
                 elif len(tag) == 2 and tag[0] == 'freqDemand':
                     args = tag[1].split(',')
@@ -78,12 +79,12 @@ class DrugNode:
                 elif len(tag) == 1 and tag[0] == 'printDrugInventory':
                     if self is not None:
                         totalMedicines = countTotalMedicines(self)
-                    print("------ printDrugInventory -------", file=fout)
+                    print("------- printDrugInventory --------", file=fout)
                     print('Total number of medicines entered in the inventory - ', totalMedicines, file=fout)
                     self._printDrugInventory()
 
                 elif len(tag) == 1 and tag[0] == 'printStockOut':
-                    print("------ printStockOut -------", file=fout)
+                    print("---------- printStockOut -----------", file=fout)
                     print("The following medicines are out of stock:", file=fout)
                     self._printStockOut()
 
@@ -96,7 +97,7 @@ class DrugNode:
                     print("minunits:", tag[1], file=fout)
                     print("Drugs with supply shortage:", file=fout)
                     self._supplyShortage(int(tag[1]))
-                if tag[0] != 'updateDrugList':
+                if len(tag) > 1 and tag[0] != 'updateDrugList':
                     print("------------------------------------\n", file=fout)
 
             else:
@@ -121,6 +122,8 @@ class DrugNode:
             else:
                 drugToUpdate.avCount = drugToUpdate.avCount + availCount
                 print("Buy order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =", drugToUpdate.avCount)
+        else:
+            print("Invalid drug input for update!")
 
     def _searchNode(self, uid):
         # Search in left
@@ -204,7 +207,7 @@ class DrugNode:
         if self.right:
             self.right._highDemandDrugs(status, frequency)
 
-    def _recreateOutputFile(self):
+    def _createOutputFile(self):
         global fout
         fout = open("outputPS1.txt", "w")
         fout.close()
