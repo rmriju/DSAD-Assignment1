@@ -40,7 +40,7 @@ class DrugNode:
             self.uid = uid
             self.avCount = availCount
 
-    def readDrugList(self):
+    def readDrugList(self, validFlag=0):
         file = open("inputPS1.txt")
         content = file.read()
         lines = content.split('\n')
@@ -48,10 +48,11 @@ class DrugNode:
             drug = line.split(',')
             if len(drug) > 1:
                 if len(drug) == 2:
-                    # total_buyOrder = total_buyOrder + 1
                     self._addDrug(int(drug[0]), int(drug[1]))
+                    validFlag = validFlag + 1
                 else:
-                    print('File Input - invalid format')
+                    print('Invalid drug! - Please correct inputPS1')
+        return validFlag
 
     def executePromptsTags(self):
         file = open("promptsPS1.txt")
@@ -218,5 +219,8 @@ def countTotalMedicines(drugNode):
 
 if __name__ == '__main__':
     drugList = DrugNode()
-    drugList.readDrugList()
-    drugList.executePromptsTags()
+    if drugList.readDrugList():
+        drugList.executePromptsTags()
+    else:
+        print("Invalid drug list entered !")
+
