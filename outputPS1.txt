@@ -27,12 +27,10 @@ Total number of medicines entered in the inventory -  7
 
 ------ checkDrugStatus:  114 -------
 Drug id 114 entered 4 times into the system. Its last status was ‘sell’ and currently have 7 units available
-
 ------------------------------------
 
 ------ checkDrugStatus:  111 -------
 Drug id 111 entered 1 times into the system. Its last status was ‘buy’ and currently have 10 units available
-
 ------------------------------------
 
 ------ freqDemand: sell ,  1 ------

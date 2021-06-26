@@ -49,7 +49,7 @@ class DrugNode:
             if len(drug) > 1:
                 if len(drug) == 2:
                     self._addDrug(int(drug[0]), int(drug[1]))
-                    validFlag = validFlag + 1
+                    validFlag = 1
                 else:
                     print('Invalid drug! - Please correct inputPS1')
         return validFlag
@@ -163,11 +163,11 @@ class DrugNode:
             if self.chkoutCtr % 2 == 0:
                 print("Drug id", self.uid, "entered", self.chkoutCtr,
                       "times into the system. Its last status was ‘sell’ and currently have", self.avCount,
-                      "units available\n", file=fout)
+                      "units available", file=fout)
             else:
                 print("Drug id", self.uid, "entered", self.chkoutCtr,
                       "times into the system. Its last status was ‘buy’ and currently have", self.avCount,
-                      "units available\n", file=fout)
+                      "units available", file=fout)
             if self.avCount == 0:
                 print("All units of drug id", self.uid, "have been sold\n", file=fout)
             return
