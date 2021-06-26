@@ -1,7 +1,7 @@
-import os
-import copy
-
 # Drug Node class as a binary tree
+fout = None
+
+
 class DrugNode:
     def __init__(self, uid=None, availCount=0):
         self.uid = uid
@@ -14,11 +14,11 @@ class DrugNode:
     def _addDrug(self, uid, availCount):
         newDrugNode = DrugNode(uid, availCount)
         if self.uid:
-            drugExists = self.searchNode(uid)
+            drugExists = self._searchNode(uid)
             if drugExists:
                 drugExists.chkoutCtr = drugExists.chkoutCtr + 1
                 if drugExists.chkoutCtr % 2 == 0:
-                    if(drugExists.avCount - availCount > -1):
+                    if drugExists.avCount - availCount > -1:
                         drugExists.avCount = drugExists.avCount - availCount
                     else:
                         print("Invalid Input! For", drugExists.uid, ",should not have negative stock")
@@ -40,14 +40,6 @@ class DrugNode:
             self.uid = uid
             self.avCount = availCount
 
-    # Print the tree
-    def printTree(self, pos):
-        print(self.uid, "(", self.avCount, ",", pos, ")"),
-        if self.left:
-            self.left.printTree('L')
-        if self.right:
-            self.right.printTree('R')
-
     def readDrugList(self):
         file = open("inputPS1.txt")
         content = file.read()
@@ -63,6 +55,8 @@ class DrugNode:
 
     def executePromptsTags(self):
         file = open("promptsPS1.txt")
+        global fout
+        self._recreateOutputFile()
         content = file.read()
         lines = content.split('\n')
         for line in lines:
@@ -75,83 +69,90 @@ class DrugNode:
 
                 elif len(tag) == 2 and tag[0] == 'freqDemand':
                     args = tag[1].split(',')
-                    print("-------High demand drugs-----")
-                    print("Drugs with", args[0].strip(), "entries more than", args[1], "times are:")
+                    print("------ freqDemand:", args[0].strip(), ",", args[1], "------", file=fout)
+                    print("Drugs with", args[0].strip(), "entries more than", args[1], "times are:", file=fout)
                     # args[0] carries status(Sale/Buy), and args[1] holds freq
-                    self.highDemandDrugs(args[0], int(args[1]))
+                    self._highDemandDrugs(args[0], int(args[1]))
 
                 elif len(tag) == 1 and tag[0] == 'printDrugInventory':
-                    print("-------Drug Inventory-------")
-                    print('Total number of medicines entered in the inventory - ?')
-                    self.printDrugInventory()
+                    if self is not None:
+                        totalMedicines = countTotalMedicines(self)
+                    print("------ printDrugInventory -------", file=fout)
+                    print('Total number of medicines entered in the inventory - ', totalMedicines, file=fout)
+                    self._printDrugInventory()
 
                 elif len(tag) == 1 and tag[0] == 'printStockOut':
-                    print("-------Drug Stock out-------")
-                    print("The following medicines are out of stock:")
-                    self.printStockOut()
+                    print("------ printStockOut -------", file=fout)
+                    print("The following medicines are out of stock:", file=fout)
+                    self._printStockOut()
 
                 elif len(tag) == 2 and tag[0] == 'checkDrugStatus':
-                    self.checkDrugStatus(int(tag[1]))
-                    # Check if outputPS1.txt is updated with drug status as per input
+                    print("------ checkDrugStatus:", tag[1], "-------", file=fout)
+                    self._checkDrugStatus(int(tag[1]))
 
                 elif len(tag) == 2 and tag[0] == 'supplyShortage':
-                    print("-------Supply shortage--------")
-                    print("Drugs with supply shortage:")
-                    self.supplyShortage(int(tag[1]))
+                    print("------- supplyShortage:", tag[1], "--------", file=fout)
+                    print("minunits:", tag[1], file=fout)
+                    print("Drugs with supply shortage:", file=fout)
+                    self._supplyShortage(int(tag[1]))
+                if tag[0] != 'updateDrugList':
+                    print("------------------------------------\n", file=fout)
 
             else:
                 print('File Input - invalid format')
+        fout.close()
 
     def _updateDrugList(self, uid, availCount):
         # Get the drug node to update
-        drugToUpdate = self.searchNode(uid)
+        drugToUpdate = self._searchNode(uid)
         if drugToUpdate:
             drugToUpdate.chkoutCtr = drugToUpdate.chkoutCtr + 1
-            # Sell order
+            # Sale order
             if drugToUpdate.chkoutCtr % 2 == 0:
                 if drugToUpdate.avCount - availCount > -1:
                     drugToUpdate.avCount = drugToUpdate.avCount - availCount
-                    print("Sale order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =", drugToUpdate.avCount)
+                    print("Sale order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =",
+                          drugToUpdate.avCount)
                 else:
-                    print("Insufficient stock!\nOnly", drugToUpdate.avCount, "stock left for medicine", drugToUpdate.uid)
+                    print("Insufficient stock!\nOnly", drugToUpdate.avCount, "stock left for medicine",
+                          drugToUpdate.uid)
             # Buy order
             else:
                 drugToUpdate.avCount = drugToUpdate.avCount + availCount
                 print("Buy order for", drugToUpdate.uid, ", qty =", availCount, ", Bal Stock =", drugToUpdate.avCount)
 
-    def searchNode(self, uid):
+    def _searchNode(self, uid):
         # Search in left
         if uid < self.uid and self.left is not None:
-            return self.left.searchNode(uid)
+            return self.left._searchNode(uid)
         # returns if the medicine matches
         elif self.uid == uid:
             return self
         # Search in right
         elif uid > self.uid and self.right is not None:
-            return self.right.searchNode(uid)
+            return self.right._searchNode(uid)
 
-    def printDrugInventory(self):
+    def _printDrugInventory(self):
         if self.left:
-            self.left.printDrugInventory()
-        print(self.uid, ",", self.avCount),
+            self.left._printDrugInventory()
+        print(self.uid, ",", self.avCount, file=fout),
         if self.right:
-            self.right.printDrugInventory()
+            self.right._printDrugInventory()
 
-    def printStockOut(self):
+    def _printStockOut(self):
         # Traverse to next left
         if self.left:
-            self.left.printStockOut()
+            self.left._printStockOut()
         # Inorder traversal - LNR
         if self and self.avCount == 0:
-            print(self.uid)
+            print(self.uid, file=fout)
         # Traverse to next right
         if self.right:
-            self.right.printStockOut()
+            self.right._printStockOut()
 
-    def checkDrugStatus(self, uid):
+    def _checkDrugStatus(self, uid):
         # file update with appropriate msg if the medicine matches
         if self.uid == uid:
-            fout = open("outputPS1.txt", "a")
             # Checking Sale or Buy
             if self.chkoutCtr % 2 == 0:
                 print("Drug id", self.uid, "entered", self.chkoutCtr,
@@ -163,55 +164,59 @@ class DrugNode:
                       "units available\n", file=fout)
             if self.avCount == 0:
                 print("All units of drug id", self.uid, "have been sold\n", file=fout)
-            fout.close()
             return
         # Traverse to left
         elif uid < self.uid and self.left is not None:
-            return self.left.checkDrugStatus(uid)
+            return self.left._checkDrugStatus(uid)
         # Traverse to right
         elif uid > self.uid and self.right is not None:
-            return self.right.checkDrugStatus(uid)
+            return self.right._checkDrugStatus(uid)
         else:
             # file update if the drug is not found
-            fout = open("outputPS1.txt", "a")
             print("Drug id", self.uid, "does not exist\n", file=fout)
-            fout.close()
             return
 
-    def supplyShortage(self, minunits, flag=0):
+    def _supplyShortage(self, minunits, flag=0):
         # Traverse to next left
         if self.left:
-            self.left.supplyShortage(minunits, flag)
+            self.left._supplyShortage(minunits, flag)
         # Inorder traversal - LNR
         if self.avCount <= minunits:
-            print(self.uid, ",", self.avCount)
+            print(self.uid, ",", self.avCount, file=fout)
         # Traverse to next right
         if self.right:
-            self.right.supplyShortage(minunits, flag)
+            self.right._supplyShortage(minunits, flag)
 
-    def highDemandDrugs(self, status, frequency):
+    def _highDemandDrugs(self, status, frequency):
         # Traverse to next left
         if self.left:
-            self.left.highDemandDrugs(status, frequency)
+            self.left._highDemandDrugs(status, frequency)
         # For even counter, buy and sale count are equal
         if self.chkoutCtr % 2 == 0 and (self.chkoutCtr / 2) > frequency:
-            print(self.uid, ",", self.chkoutCtr)
+            print(self.uid, ",", self.chkoutCtr, file=fout)
         # For buy, it will be counter/2 + 1 frequency
         if status.strip() == 'buy' and self.chkoutCtr % 2 == 1 and (self.chkoutCtr // 2) + 1 > frequency:
-            print(self.uid, ",", self.chkoutCtr)
+            print(self.uid, ",", self.chkoutCtr, file=fout)
         if status.strip() == 'sell' and self.chkoutCtr % 2 == 1 and (self.chkoutCtr // 2) > frequency:
-            print(self.uid, ",", self.chkoutCtr)
+            print(self.uid, ",", self.chkoutCtr, file=fout)
         # Traverse to next right
         if self.right:
-            self.right.highDemandDrugs(status, frequency)
+            self.right._highDemandDrugs(status, frequency)
+
+    def _recreateOutputFile(self):
+        global fout
+        fout = open("outputPS1.txt", "w")
+        fout.close()
+        fout = open("outputPS1.txt", "a")
 
 
+def countTotalMedicines(drugNode):
+    if drugNode is None:
+        return 0
+    return 1 + countTotalMedicines(drugNode.left) + countTotalMedicines(drugNode.right)
 
 
 if __name__ == '__main__':
     drugList = DrugNode()
-    if os.path.exists("outputPS1.txt"):
-        os.remove("outputPS1.txt")
-
     drugList.readDrugList()
     drugList.executePromptsTags()
