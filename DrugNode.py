@@ -97,7 +97,9 @@ class DrugNode:
                     print("minunits:", tag[1], file=fout)
                     print("Drugs with supply shortage:", file=fout)
                     self._supplyShortage(int(tag[1]))
-                if len(tag) > 1 and tag[0] != 'updateDrugList':
+                if len(tag) > 0 and (
+                        tag[0] == 'freqDemand' or tag[0] == 'printDrugInventory' or tag[0] == 'printStockOut'
+                        or tag[0] == 'checkDrugStatus' or tag[0] == 'supplyShortage'):
                     print("------------------------------------\n", file=fout)
 
             else:
@@ -226,4 +228,3 @@ if __name__ == '__main__':
         drugList.executePromptsTags()
     else:
         print("Invalid drug list entered !")
-

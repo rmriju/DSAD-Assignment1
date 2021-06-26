@@ -1,6 +1,7 @@
 
 printDrugInventory
 
+# updateDrugList results are printed at console
 updateDrugList: 112, 9
 updateDrugList: 112, 12
 updateDrugList: 114, 20
