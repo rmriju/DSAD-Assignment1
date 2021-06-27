@@ -56,6 +56,5 @@ The following medicines are out of stock:
 
 ------ checkDrugStatus:  123 -------
 Drug id 123 does not exist
-
 ------------------------------------
 

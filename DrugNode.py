@@ -1,8 +1,13 @@
-# Drug Node class as a binary tree
 fout = None
 
 
+# Drug Node class as a binary tree
 class DrugNode:
+
+    ################################################################
+    # Constructor method to instantiate class variables- additional
+    # variables- left,right and parent for BST traversal
+    ################################################################
     def __init__(self, uid=None, availCount=0):
         self.uid = uid
         self.avCount = availCount
@@ -11,10 +16,14 @@ class DrugNode:
         self.right = None
         self.parent = None
 
-    def _addDrug(self, uid, availCount):
+    ################################################################
+    # Method for adding new drugs, and updates if any found
+    ################################################################
+    def _addDrug(self, uid, availCount, drugExists=None):
         newDrugNode = DrugNode(uid, availCount)
         if self.uid:
-            drugExists = self._searchNode(uid)
+            if drugExists is None:
+                drugExists = self._searchNode(uid)
             if drugExists:
                 drugExists.chkoutCtr = drugExists.chkoutCtr + 1
                 if drugExists.chkoutCtr % 2 == 0:
@@ -29,17 +38,21 @@ class DrugNode:
                     self.left = newDrugNode
                     newDrugNode.parent = self
                 else:
-                    self.left._addDrug(uid, availCount)
+                    self.left._addDrug(uid, availCount, drugExists)
             elif uid >= self.uid:
                 if self.right is None:
                     self.right = newDrugNode
                     newDrugNode.parent = self
                 else:
-                    self.right._addDrug(uid, availCount)
+                    self.right._addDrug(uid, availCount, drugExists)
         else:
             self.uid = uid
             self.avCount = availCount
 
+    ################################################################
+    # Method for read drug list from input file inputPS1.txt
+    # This intern calls _addDrug method which will generate tree
+    ################################################################
     def readDrugList(self, validFlag=0):
         file = open("inputPS1.txt")
         content = file.read()
@@ -54,6 +67,9 @@ class DrugNode:
                     print('Invalid drug! - Please correct inputPS1')
         return validFlag
 
+    ################################################################
+    # Method to trigger different tags from file promptsPS1.txt
+    ################################################################
     def executePromptsTags(self):
         file = open("promptsPS1.txt")
         global fout
@@ -106,6 +122,9 @@ class DrugNode:
                 print('File Input - invalid format')
         fout.close()
 
+    ################################################################
+    # Method to update druglist as per input given in prompts tag
+    ################################################################
     def _updateDrugList(self, uid, availCount):
         # Get the drug node to update
         drugToUpdate = self._searchNode(uid)
@@ -127,6 +146,10 @@ class DrugNode:
         else:
             print("Invalid drug input for update!")
 
+    ################################################################
+    # Method to search a specific node in the drug list tree, and
+    # this is being called from other methods.
+    ################################################################
     def _searchNode(self, uid):
         # Search in left
         if uid < self.uid and self.left is not None:
@@ -138,6 +161,9 @@ class DrugNode:
         elif uid > self.uid and self.right is not None:
             return self.right._searchNode(uid)
 
+    ################################################################
+    # Method to print drug inventory as per prompt tag
+    ################################################################
     def _printDrugInventory(self):
         if self.left:
             self.left._printDrugInventory()
@@ -145,6 +171,9 @@ class DrugNode:
         if self.right:
             self.right._printDrugInventory()
 
+    ################################################################
+    # Method to print every drug which has 0 stock
+    ################################################################
     def _printStockOut(self):
         # Traverse to next left
         if self.left:
@@ -156,6 +185,9 @@ class DrugNode:
         if self.right:
             self.right._printStockOut()
 
+    ################################################################
+    # Method to check and print drug status as per prompt tag input
+    ################################################################
     def _checkDrugStatus(self, uid):
         # file update with appropriate msg if the medicine matches
         if self.uid == uid:
@@ -179,9 +211,13 @@ class DrugNode:
             return self.right._checkDrugStatus(uid)
         else:
             # file update if the drug is not found
-            print("Drug id", uid, "does not exist\n", file=fout)
+            print("Drug id", uid, "does not exist", file=fout)
             return
 
+    ################################################################
+    # Method to check and print drugs with supply shortage as per
+    # minunits threshold given in prompt tag input
+    ################################################################
     def _supplyShortage(self, minunits, flag=0):
         # Traverse to next left
         if self.left:
@@ -193,6 +229,10 @@ class DrugNode:
         if self.right:
             self.right._supplyShortage(minunits, flag)
 
+    ################################################################
+    # Method prints high demand drugs based on the status(buy/sell)
+    # and frquency as per input given in prompt tag
+    ################################################################
     def _highDemandDrugs(self, status, frequency):
         # Traverse to next left
         if self.left:
@@ -209,6 +249,9 @@ class DrugNode:
         if self.right:
             self.right._highDemandDrugs(status, frequency)
 
+    ################################################################
+    # Method will invalidate file content and reopen in append mode
+    ################################################################
     def _createOutputFile(self):
         global fout
         fout = open("outputPS1.txt", "w")
@@ -216,12 +259,20 @@ class DrugNode:
         fout = open("outputPS1.txt", "a")
 
 
+################################################################
+# Method to count total nodes (medicines), this is referred at
+# print inventory method
+################################################################
 def countTotalMedicines(drugNode):
     if drugNode is None:
         return 0
     return 1 + countTotalMedicines(drugNode.left) + countTotalMedicines(drugNode.right)
 
 
+################################################################
+# Main method to run the program, this triggers promptsTag call
+# if any druglist is successfully loaded.
+################################################################
 if __name__ == '__main__':
     drugList = DrugNode()
     if drugList.readDrugList():
