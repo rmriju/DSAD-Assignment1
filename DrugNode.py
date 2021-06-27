@@ -179,7 +179,7 @@ class DrugNode:
             return self.right._checkDrugStatus(uid)
         else:
             # file update if the drug is not found
-            print("Drug id", self.uid, "does not exist\n", file=fout)
+            print("Drug id", uid, "does not exist\n", file=fout)
             return
 
     def _supplyShortage(self, minunits, flag=0):
